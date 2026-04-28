@@ -13,10 +13,11 @@ export class EmailController {
 
     // Validate required fields
     if (!to || !template) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'to and template are required'
       });
+      return;
     }
 
     try {
@@ -51,10 +52,11 @@ export class EmailController {
     const { email, role, inviteLink, expiresAt, team, department, platformName, name } = req.body;
     
     if (!email || !role || !inviteLink || !expiresAt) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'email, role, inviteLink, and expiresAt are required'
       });
+      return;
     }
     
     // Return immediately - process email in background
@@ -92,10 +94,11 @@ export class EmailController {
     const { email, name, phone } = req.body;
     
     if (!email || !name) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'email and name are required'
       });
+      return;
     }
     
     // Return immediately - process email in background
@@ -124,10 +127,11 @@ export class EmailController {
     const { email, resetLink, name, expiresAt, platformName } = req.body;
     
     if (!email || !resetLink) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'email and resetLink are required'
       });
+      return;
     }
     
     // Log the received platformName for debugging
@@ -175,10 +179,11 @@ export class EmailController {
     const { email, name, suspendedUntil, reason, daysRemaining, contactInfo, platformName } = req.body;
     
     if (!email || !name || !suspendedUntil || !reason) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'email, name, suspendedUntil, and reason are required'
       });
+      return;
     }
     
     // Return immediately - process email in background
@@ -215,10 +220,11 @@ export class EmailController {
     const { email, name, reason, contactInfo, platformName } = req.body;
     
     if (!email || !name || !reason) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'email, name, and reason are required'
       });
+      return;
     }
     
     // Return immediately - process email in background
