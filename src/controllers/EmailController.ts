@@ -9,22 +9,38 @@ export class EmailController {
    * POST /api/v1/email/send
    */
   static sendEmail = asyncHandler(async (req: Request, res: Response) => {
-    // Return immediately - process email in background
-    res.json({
-      success: true,
-      message: 'Email queued for sending'
-    });
-    
-    // Process email asynchronously (don't await)
-    EmailService.sendEmail(req.body).catch((error: any) => {
-      logger.error('Background email send failed', {
-        to: req.body.to,
-        subject: req.body.subject,
+    const { to, template, subject } = req.body;
+
+    // Validate required fields
+    if (!to || !template) {
+      return res.status(400).json({
+        success: false,
+        error: 'to and template are required'
+      });
+    }
+
+    try {
+      // Process email synchronously to catch errors immediately
+      await EmailService.sendEmail(req.body);
+
+      res.json({
+        success: true,
+        message: 'Email sent successfully'
+      });
+    } catch (error: any) {
+      logger.error('Email send failed', {
+        to,
+        subject,
+        template,
         error: error.message
       });
-    });
-    
-    return;
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to send email',
+        message: error.message
+      });
+    }
   });
 
   /**
