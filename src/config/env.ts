@@ -47,6 +47,9 @@ const envSchema = z.object({
   
   // CORS
   CORS_ORIGIN: z.string().optional(),
+
+  /** Fallback when POST /admin-invite omits platformName (e.g. legacy callers). Ticket service should send platformName explicitly. */
+  DEFAULT_ADMIN_INVITE_PLATFORM_NAME: z.string().min(1).optional(),
 });
 
 export function validateEnv() {

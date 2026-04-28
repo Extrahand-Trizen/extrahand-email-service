@@ -12,12 +12,26 @@ export interface AdminInviteTemplateData {
 
 import { EXTRAHAND_LOGO_SVG } from "./logo";
 
+/** Ticket / portal roles → user-facing labels (agent, admin, supervisor, user). */
+function formatInviteRoleDisplay(role: string): string {
+  const r = (role || "").toLowerCase().trim();
+  const labels: Record<string, string> = {
+    admin: "Administrator",
+    supervisor: "Supervisor",
+    agent: "Support Agent",
+    user: "User",
+  };
+  if (labels[r]) return labels[r];
+  if (!role) return "Member";
+  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+}
+
 export const adminInviteTemplate: EmailTemplate = {
   name: "admin_invite",
   subject: "You've been invited to join ExtraHand Admin Team",
 
   html: (data: AdminInviteTemplateData) => {
-    const roleDisplay = data.role.charAt(0).toUpperCase() + data.role.slice(1);
+    const roleDisplay = formatInviteRoleDisplay(data.role);
     const platformName = data.platformName || "Partner Onboarding Platform";
     const expiryDate = new Date(data.expiresAt).toLocaleDateString("en-US", {
       year: "numeric",
@@ -309,7 +323,7 @@ export const adminInviteTemplate: EmailTemplate = {
   },
 
   text: (data: AdminInviteTemplateData) => {
-    const roleDisplay = data.role.charAt(0).toUpperCase() + data.role.slice(1);
+    const roleDisplay = formatInviteRoleDisplay(data.role);
     const platformName = data.platformName || "Partner Onboarding Platform";
     const expiryDate = new Date(data.expiresAt).toLocaleDateString("en-US", {
       year: "numeric",

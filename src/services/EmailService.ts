@@ -424,7 +424,8 @@ export class EmailService {
     expiresAt: Date,
     team?: string,
     department?: string,
-    platformName?: string
+    platformName?: string,
+    inviteeName?: string
   ) {
     // Always use CID attachment - fetch logo from URL and attach inline
     // This is the only bulletproof method for Outlook
@@ -465,8 +466,12 @@ export class EmailService {
       // Continue without logo - template will show broken image or nothing
     }
 
-    const defaultPlatformName = "Partner Onboarding Platform";
+    const defaultPlatformName =
+      this.env.DEFAULT_ADMIN_INVITE_PLATFORM_NAME || 'Partner Onboarding Platform';
     const finalPlatformName = platformName || defaultPlatformName;
+    const displayName =
+      (inviteeName && String(inviteeName).trim()) ||
+      email.split('@')[0];
 
     return this.sendEmail({
       to: email,
@@ -479,9 +484,10 @@ export class EmailService {
         inviteLink,
         expiresAt,
         platformName: finalPlatformName,
+        name: displayName,
       },
       attachments: logoAttachment, // CID attachment - bulletproof for Outlook
-      metadata: { type: 'admin_invite' },
+      metadata: { type: 'admin_invite', source: 'ticket_portal' },
     });
   }
 
