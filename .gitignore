@@ -6,3 +6,4 @@ logs/
 .env.production
 *.log
 .DS_Store
+# package-lock.json is committed for CI (npm ci / Actions)
