@@ -33,6 +33,7 @@ const ALWAYS_SEND_TEMPLATES = new Set([
   'suspension',
   'ban',
   'task_start_otp', // OTP is security-critical
+  'admin_alert',
 ]);
 
 const TEMPLATE_CATEGORY_MAP: Record<string, EmailPreferenceCategory> = {

@@ -47,7 +47,6 @@ export const taskStartOtpTemplate: EmailTemplate = {
                     <div style="background:#fff;padding:20px;border-radius:8px;margin:0 auto;max-width:280px;box-shadow:0 2px 8px rgba(220,38,38,0.15);">
                       <p style="margin:0;font-size:40px;font-weight:800;color:#DC2626;letter-spacing:8px;font-family:'Courier New',monospace;">${data.otp || '******'}</p>
                     </div>
-                    ${data.expiresAt ? `<p style="margin:16px 0 0;font-size:13px;color:#DC2626;font-weight:600;">⏱️ Valid until ${data.expiresAt}</p>` : ''}
                   </td>
                 </tr>
               </table>
@@ -121,7 +120,6 @@ ${data.taskerName || 'Your tasker'} is ready to start working on "${data.taskTit
 For security verification, please share this OTP with them:
 
 OTP CODE: ${data.otp || '******'}
-${data.expiresAt ? `Valid until: ${data.expiresAt}` : 'Valid for 10 minutes'}
 
 Task Details:
 - Task: ${data.taskTitle || 'Task'}
