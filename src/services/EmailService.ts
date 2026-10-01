@@ -21,22 +21,18 @@ type EmailPreferenceCategory =
   | 'system'
   | 'marketing';
 
-// Templates that are ALWAYS sent regardless of preferences (auth/security)
-const ALWAYS_SEND_TEMPLATES = new Set([
-  'email_verification',
-  'password_reset',
-  'login_alert',
-  'account_created',
-  'welcome',
-  'admin_invite',
-  'account_suspended',
-  'suspension',
-  'ban',
-  'task_start_otp', // OTP is security-critical
-  'admin_alert',
-]);
-
 const TEMPLATE_CATEGORY_MAP: Record<string, EmailPreferenceCategory> = {
+  email_verification: 'transactional',
+  password_reset: 'transactional',
+  login_alert: 'transactional',
+  account_created: 'transactional',
+  welcome: 'transactional',
+  admin_invite: 'transactional',
+  account_suspended: 'transactional',
+  suspension: 'transactional',
+  ban: 'transactional',
+  task_start_otp: 'transactional',
+  admin_alert: 'transactional',
   // Transactional (account actions)
   task_posted_confirmation: 'transactional',
   verification_confirmed: 'transactional',
@@ -125,34 +121,16 @@ export class EmailService {
 
   private static async isEmailAllowed(options: EmailOptions): Promise<boolean> {
     const template = options.template;
-
-    // Always send auth/security emails — never gated by preferences
-    if (template && ALWAYS_SEND_TEMPLATES.has(template)) {
-      return true;
-    }
-
-    const category = this.resolvePreferenceCategory(options);
+    const category = this.resolvePreferenceCategory(options) || 'transactional';
     const recipientId = this.resolveRecipientId(options);
 
-    // If category is unknown, allow through — the calling service already pre-checked
-    // We only block here when we know the category AND know the user said no
-    if (!category) {
-      logger.info('Email allowed: cannot resolve category (pre-check assumed done)', {
-        template,
-        to: options.to,
-      });
-      return true;
-    }
-
-    // If recipientId not found, allow through — the calling service (task-service) already
-    // ran its own preference check before sending here
     if (!recipientId) {
-      logger.info('Email allowed: no userId to check (pre-check assumed done)', {
+      logger.warn('Email blocked: missing recipient userId for preference lookup', {
         template,
         category,
         to: options.to,
       });
-      return true;
+      return false;
     }
 
     return NotificationPreferencesClient.canSendEmail(
@@ -492,11 +470,12 @@ export class EmailService {
     });
   }
 
-  static async sendAccountCreatedEmail(email: string, name: string, phone?: string) {
+  static async sendAccountCreatedEmail(email: string, name: string, phone?: string, userId?: string) {
     return this.sendEmail({
       to: email,
       subject: 'Your ExtraHand Account is Ready!',
       template: 'account_created',
+      userId,
       data: {
         name,
         phone,
@@ -515,7 +494,8 @@ export class EmailService {
     resetLink: string,
     name?: string,
     expiresAt?: Date,
-    platformName?: string
+    platformName?: string,
+    userId?: string
   ) {
     logger.info('EmailService.sendPasswordResetEmail called', {
       email,
@@ -606,6 +586,7 @@ export class EmailService {
       to: email,
       subject: '', // Empty - will be generated from template
       template: 'password_reset',
+      userId,
       data: templateData,
       attachments: logoAttachment, // CID attachment - bulletproof for Outlook
       metadata: { type: 'password_reset' },

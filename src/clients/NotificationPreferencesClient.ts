@@ -67,15 +67,22 @@ export class NotificationPreferencesClient {
 
             const canSend = response.data?.data?.canSend;
 
-            // Only block when user-service explicitly says no
             if (canSend === false) {
                 logger.info('Email blocked: user preference is OFF', { uid, category });
                 return false;
             }
 
-            // canSend === true, or unexpected format — allow through
-            logger.info('Checked email notification permission', { uid, category, canSend });
-            return true;
+            if (canSend === true) {
+                logger.info('Checked email notification permission', { uid, category, canSend });
+                return true;
+            }
+
+            logger.warn('Email preference response was unexpected; defaulting to blocked', {
+                uid,
+                category,
+                received: canSend,
+            });
+            return false;
 
         } catch (error: any) {
             // Fail-open on network errors: the task-service already pre-checked preferences.

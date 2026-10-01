@@ -59,14 +59,7 @@ export class EmailController {
       return;
     }
     
-    // Return immediately - process email in background
-    res.json({
-      success: true,
-      message: 'Email queued for sending'
-    });
-    
-    // Process email asynchronously (don't await)
-    EmailService.sendAdminInviteEmail(
+    const result = await EmailService.sendAdminInviteEmail(
       email,
       role,
       inviteLink,
@@ -75,15 +68,15 @@ export class EmailController {
       department,
       platformName,
       name
-    ).catch((error: any) => {
-      logger.error('Background admin invite email send failed', {
-        email,
-        role,
-        error: error.message
-      });
-    });
-    
-    return;
+    );
+
+    if (!result.success) {
+      logger.error('Admin invite email send failed', { email, role, error: result.error });
+      res.status(502).json({ success: false, error: result.error || 'Failed to send invitation email' });
+      return;
+    }
+
+    res.json({ success: true, message: 'Email sent successfully', messageId: result.messageId });
   });
 
   /**
@@ -91,7 +84,7 @@ export class EmailController {
    * POST /api/v1/email/account-created
    */
   static sendAccountCreatedEmail = asyncHandler(async (req: Request, res: Response) => {
-    const { email, name, phone } = req.body;
+    const { email, name, phone, userId } = req.body;
     
     if (!email || !name) {
       res.status(400).json({
@@ -108,7 +101,7 @@ export class EmailController {
     });
     
     // Process email asynchronously (don't await)
-    EmailService.sendAccountCreatedEmail(email, name, phone).catch((error: any) => {
+    EmailService.sendAccountCreatedEmail(email, name, phone, userId).catch((error: any) => {
       logger.error('Background account created email send failed', {
         email,
         name,
@@ -124,7 +117,7 @@ export class EmailController {
    * POST /api/v1/email/password-reset
    */
   static sendPasswordResetEmail = asyncHandler(async (req: Request, res: Response) => {
-    const { email, resetLink, name, expiresAt, platformName } = req.body;
+    const { email, resetLink, name, expiresAt, platformName, userId } = req.body;
     
     if (!email || !resetLink) {
       res.status(400).json({
@@ -159,7 +152,8 @@ export class EmailController {
       resetLink,
       name,
       expiresAt ? new Date(expiresAt) : undefined,
-      platformName // Pass as-is, EmailService will handle defaults
+      platformName,
+      userId
     ).catch((error: any) => {
       logger.error('Background password reset email send failed', {
         email,
